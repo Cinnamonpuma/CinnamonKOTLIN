@@ -53,6 +53,8 @@ abstract class CinnamonScreen(title: Text) : Screen(title) {
     abstract fun initializeComponents()
     
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        super.render(context, mouseX, mouseY, delta)
+        
         // Render blurred background
         renderBlurredBackground(context, mouseX, mouseY, delta)
         
@@ -66,8 +68,6 @@ abstract class CinnamonScreen(title: Text) : Screen(title) {
         buttons.forEach { button ->
             button.render(context, mouseX, mouseY, delta)
         }
-        
-        super.render(context, mouseX, mouseY, delta)
     }
     
     private fun renderBlurredBackground(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
