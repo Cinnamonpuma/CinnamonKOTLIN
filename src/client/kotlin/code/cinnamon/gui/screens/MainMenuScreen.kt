@@ -10,11 +10,15 @@ import code.cinnamon.gui.theme.CinnamonTheme
 class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
     
     override fun initializeComponents() {
-        val centerX = width / 2
-        val startY = HEADER_HEIGHT + 60
-        val buttonWidth = 200
+        val centerX = guiX + guiWidth / 2
+        val contentY = getContentY()
+        val buttonWidth = 180
         val buttonHeight = CinnamonTheme.BUTTON_HEIGHT_LARGE
-        val spacing = 50
+        val spacing = 45
+        
+        // Calculate starting Y position to center buttons vertically
+        val totalButtonsHeight = (buttonHeight * 4) + (spacing * 3)
+        val startY = contentY + (getContentHeight() - totalButtonsHeight) / 2
         
         // Main navigation buttons
         addButton(CinnamonButton(
@@ -56,8 +60,8 @@ class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
     }
     
     override fun renderContent(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        val centerX = width / 2
-        val logoY = HEADER_HEIGHT + 20
+        val centerX = guiX + guiWidth / 2
+        val contentY = getContentY()
         
         // Draw logo/title area
         val logoText = Text.literal("CINNAMON")
@@ -66,7 +70,7 @@ class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
             textRenderer,
             logoText,
             centerX - logoWidth / 2,
-            logoY,
+            contentY + 20,
             CinnamonTheme.accentColor,
             true
         )
@@ -78,10 +82,24 @@ class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
             textRenderer,
             subtitleText,
             centerX - subtitleWidth / 2,
-            logoY + 20,
+            contentY + 40,
             CinnamonTheme.secondaryTextColor,
             false
         )
+        
+        // Add a subtle glow effect around the logo
+        val glowColor = 0x20ffffff
+        context.fill(
+            centerX - logoWidth / 2 - 2,
+            contentY + 18,
+            centerX + logoWidth / 2 + 2,
+            contentY + 32,
+            glowColor
+        )
+    }
+    
+    override fun renderFooter(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        super.renderFooter(context, mouseX, mouseY, delta)
         
         // Draw version info in footer area
         val versionText = Text.literal("v1.0.0 - Minecraft 1.21.5")
@@ -89,14 +107,21 @@ class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
         context.drawText(
             textRenderer,
             versionText,
-            width - versionWidth - PADDING,
-            height - FOOTER_HEIGHT + 15,
+            guiX + guiWidth - versionWidth - PADDING,
+            getFooterY() + (FOOTER_HEIGHT - textRenderer.fontHeight) / 2,
             CinnamonTheme.secondaryTextColor,
             false
         )
-    }
-    
-    override fun shouldCloseOnEsc(): Boolean {
-        return true
+        
+        // Draw status indicator
+        val statusText = Text.literal("Ready")
+        context.drawText(
+            textRenderer,
+            statusText,
+            guiX + PADDING,
+            getFooterY() + (FOOTER_HEIGHT - textRenderer.fontHeight) / 2,
+            CinnamonTheme.successColor,
+            false
+        )
     }
 }
