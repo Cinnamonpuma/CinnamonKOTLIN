@@ -24,7 +24,7 @@ class CinnamonClientMod : ClientModInitializer {
                 "key.cinnamon.open_gui",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT_SHIFT, // Right Shift to open GUI
-                "category.cinnamon"
+                "CinnamonClient" // Changed line
             )
         )
         
