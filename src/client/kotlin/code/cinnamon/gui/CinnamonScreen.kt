@@ -82,28 +82,28 @@ abstract class CinnamonScreen(title: Text) : Screen(title) {
     }
     
     private fun renderShadow(context: DrawContext) {
-        // Render drop shadow around the GUI box
         val shadowColor = 0x40000000
+        val fadeColor = 0x00000000
         
-        // Bottom shadow
+        // Bottom shadow - positioned below the GUI box
         context.fillGradient(
-            guiX - SHADOW_SIZE, guiY + guiHeight,
-            guiX + guiWidth + SHADOW_SIZE, guiY + guiHeight + SHADOW_SIZE,
-            0x00000000, shadowColor
+            guiX, guiY + guiHeight,
+            guiX + guiWidth, guiY + guiHeight + SHADOW_SIZE,
+            shadowColor, fadeColor
         )
         
-        // Right shadow
+        // Right shadow - positioned to the right of the GUI box
         context.fillGradient(
-            guiX + guiWidth, guiY - SHADOW_SIZE,
+            guiX + guiWidth, guiY,
             guiX + guiWidth + SHADOW_SIZE, guiY + guiHeight,
-            0x00000000, shadowColor
+            shadowColor, fadeColor
         )
         
-        // Corner shadow
-        context.fill(
+        // Bottom-right corner shadow - fills the corner gap
+        context.fillGradient(
             guiX + guiWidth, guiY + guiHeight,
             guiX + guiWidth + SHADOW_SIZE, guiY + guiHeight + SHADOW_SIZE,
-            shadowColor
+            shadowColor, fadeColor
         )
     }
     
