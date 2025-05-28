@@ -9,12 +9,16 @@ import code.cinnamon.gui.screens.KeybindingsScreen
 import code.cinnamon.gui.screens.SettingsScreen
 import code.cinnamon.modules.ModuleManager
 import code.cinnamon.keybindings.KeybindingManager
+import code.cinnamon.gui.screens.ThemeManagerScreen
 
 object CinnamonGuiManager {
     private val client = MinecraftClient.getInstance()
     
     fun openMainMenu() {
         client.setScreen(MainMenuScreen())
+    }
+    fun openThemeManagerScreen() {
+        client.setScreen(ThemeManagerScreen())
     }
     
     fun openModulesScreen() {

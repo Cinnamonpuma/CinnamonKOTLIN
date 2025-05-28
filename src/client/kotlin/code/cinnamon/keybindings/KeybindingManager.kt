@@ -66,4 +66,15 @@ object KeybindingManager {
         registerKeybinding("cinnamon.toggle_flight", GLFW.GLFW_KEY_F)
         registerKeybinding("cinnamon.toggle_nofall", GLFW.GLFW_KEY_N)
     }
+
+    fun updateKeybinding(name: String, newKey: Int) {
+        keybindings[name]?.let {
+            it.setBoundKey(InputUtil.fromKeyCode(newKey, 0))
+            KeyBinding.updateKeysByCode()
+        }
+        // If logging for a non-existent key is desired, it would be:
+        // ?: run {
+        //    println("Keybinding not found: $name")
+        // }
+    }
 }

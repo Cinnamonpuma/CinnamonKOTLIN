@@ -16,8 +16,8 @@ class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
         val buttonHeight = CinnamonTheme.BUTTON_HEIGHT_LARGE
         val spacing = 45
         
-        // Calculate starting Y position to center buttons vertically
-        val totalButtonsHeight = (buttonHeight * 4) + (spacing * 3)
+        // Calculate starting Y position to center buttons vertically (now with 5 buttons)
+        val totalButtonsHeight = (buttonHeight * 5) + (spacing * 4)
         val startY = contentY + (getContentHeight() - totalButtonsHeight) / 2
         
         // Main navigation buttons
@@ -49,9 +49,19 @@ class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
             { _, _ -> CinnamonGuiManager.openSettingsScreen() }
         ))
         
+        // New Theme Manager button
         addButton(CinnamonButton(
             centerX - buttonWidth / 2,
             startY + spacing * 3,
+            buttonWidth,
+            buttonHeight,
+            Text.literal("Theme Manager"),
+            { _, _ -> CinnamonGuiManager.openThemeManagerScreen() }
+        ))
+        
+        addButton(CinnamonButton(
+            centerX - buttonWidth / 2,
+            startY + spacing * 4,
             buttonWidth,
             buttonHeight,
             Text.literal("Close"),

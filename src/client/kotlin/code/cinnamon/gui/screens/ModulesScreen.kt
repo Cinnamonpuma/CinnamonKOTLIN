@@ -4,6 +4,9 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.text.Text
 import code.cinnamon.gui.theme.CinnamonTheme
 import code.cinnamon.gui.CinnamonScreen
+import code.cinnamon.keybindings.KeybindingManager
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
+import net.minecraft.client.util.InputUtil
 import code.cinnamon.gui.CinnamonGuiManager
 import code.cinnamon.gui.components.CinnamonButton
 import code.cinnamon.modules.ModuleManager
@@ -253,13 +256,24 @@ class ModulesScreen : CinnamonScreen(Text.literal("Modules")) {
     }
     
     private fun getModuleKeybind(moduleName: String): String {
-        // Get keybind for module - you might want to link this with KeybindingManager
-        return when (moduleName.lowercase()) {
-            "speed" -> "V"
-            "flight" -> "F"
-            "nofall" -> "N"
-            else -> ""
+        // Construct the internal keybinding name (e.g., "cinnamon.toggle_speed")
+        // This assumes a naming convention. If module names in ModuleManager
+        // are "Speed", "Flight", etc., and keybinding names are "cinnamon.toggle_speed",
+        // "cinnamon.toggle_flight", we need to map them.
+        // A simple way is to lowercase and prepend:
+        val internalKeybindingName = "cinnamon.toggle_${moduleName.lowercase()}"
+
+        val keyBinding = KeybindingManager.getKeybinding(internalKeybindingName)
+        if (keyBinding != null) {
+            val boundKey = KeyBindingHelper.getBoundKeyOf(keyBinding)
+            // Use localizedText, which gives the proper name like "V", "F", "Mouse Button 1"
+            // For unknown or unbound keys, localizedText might be empty or "None"
+            // InputUtil.UNKNOWN_KEY is a Key object representing an unbound key.
+            if (boundKey != InputUtil.UNKNOWN_KEY) {
+                return boundKey.localizedText.string
+            }
         }
+        return "None" // Or an empty string, depending on desired display for unbound keys
     }
     
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

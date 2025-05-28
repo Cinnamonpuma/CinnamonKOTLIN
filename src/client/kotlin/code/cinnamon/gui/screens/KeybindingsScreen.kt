@@ -3,6 +3,7 @@ package code.cinnamon.gui.screens
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.text.Text
 import net.minecraft.client.util.InputUtil
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import org.lwjgl.glfw.GLFW
 import code.cinnamon.gui.CinnamonScreen
 import code.cinnamon.gui.CinnamonGuiManager
@@ -289,7 +290,7 @@ class KeybindingsScreen : CinnamonScreen(Text.literal("Keybindings")) {
                 name = name,
                 displayName = getDisplayName(name),
                 description = getDescription(name),
-                currentKey = keyBinding.defaultKey.code // Fixed: Use defaultKey instead of private boundKey
+                currentKey = KeyBindingHelper.getBoundKeyOf(keyBinding).code
             )
         }
     }
@@ -330,9 +331,9 @@ class KeybindingsScreen : CinnamonScreen(Text.literal("Keybindings")) {
     
     private fun resetAllKeybindings() {
         // Reset to default values
-        KeybindingManager.registerKeybinding("cinnamon.toggle_speed", GLFW.GLFW_KEY_V)
-        KeybindingManager.registerKeybinding("cinnamon.toggle_flight", GLFW.GLFW_KEY_F)
-        KeybindingManager.registerKeybinding("cinnamon.toggle_nofall", GLFW.GLFW_KEY_N)
+        KeybindingManager.updateKeybinding("cinnamon.toggle_speed", GLFW.GLFW_KEY_V)
+        KeybindingManager.updateKeybinding("cinnamon.toggle_flight", GLFW.GLFW_KEY_F)
+        KeybindingManager.updateKeybinding("cinnamon.toggle_nofall", GLFW.GLFW_KEY_N)
         
         selectedKeybinding = null
         isListening = false
@@ -403,7 +404,7 @@ class KeybindingsScreen : CinnamonScreen(Text.literal("Keybindings")) {
                 selectedKeybinding = null
             } else {
                 // Set the new keybinding
-                KeybindingManager.registerKeybinding(selectedKeybinding!!, keyCode)
+                KeybindingManager.updateKeybinding(selectedKeybinding!!, keyCode)
                 isListening = false
                 selectedKeybinding = null
             }
