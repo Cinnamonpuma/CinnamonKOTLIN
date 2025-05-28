@@ -12,6 +12,10 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     
     private var showColorPicker = false
     private var selectedColorType: ColorType? = null
+    
+    // Fixed color picker position (centered on screen)
+    private val pickerWidth = 300
+    private val pickerHeight = 350
     private var pickerX = 0
     private var pickerY = 0
     
@@ -26,52 +30,107 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     private val itemHeight = 35
     private val maxVisibleItems = 12
     
-    enum class ColorType(val displayName: String, val currentColor: () -> Int, val setter: (Int) -> Unit) {
-        GUI_BACKGROUND("GUI Background", { CinnamonTheme.guiBackground }, { /* Set color */ }),
-        GUI_BORDER("GUI Border", { CinnamonTheme.guiBorder }, { /* Set color */ }),
-        BACKGROUND_TOP("Background Top", { CinnamonTheme.backgroundTop }, { /* Set color */ }),
-        BACKGROUND_BOTTOM("Background Bottom", { CinnamonTheme.backgroundBottom }, { /* Set color */ }),
-        HEADER_BACKGROUND("Header Background", { CinnamonTheme.headerBackground }, { /* Set color */ }),
-        FOOTER_BACKGROUND("Footer Background", { CinnamonTheme.footerBackground }, { /* Set color */ }),
-        CONTENT_BACKGROUND("Content Background", { CinnamonTheme.contentBackground }, { /* Set color */ }),
-        CARD_BACKGROUND("Card Background", { CinnamonTheme.cardBackground }, { /* Set color */ }),
-        ACCENT_COLOR("Accent Color", { CinnamonTheme.accentColor }, { /* Set color */ }),
-        PRIMARY_TEXT("Primary Text", { CinnamonTheme.primaryTextColor }, { /* Set color */ }),
-        SECONDARY_TEXT("Secondary Text", { CinnamonTheme.secondaryTextColor }, { /* Set color */ }),
-        BUTTON_BACKGROUND("Button Background", { CinnamonTheme.buttonBackground }, { /* Set color */ }),
-        SUCCESS_COLOR("Success Color", { CinnamonTheme.successColor }, { /* Set color */ }),
-        WARNING_COLOR("Warning Color", { CinnamonTheme.warningColor }, { /* Set color */ }),
-        ERROR_COLOR("Error Color", { CinnamonTheme.errorColor }, { /* Set color */ })
+    enum class ColorType(
+        val displayName: String, 
+        val currentColor: () -> Int, 
+        val setter: (Int) -> Unit
+    ) {
+        GUI_BACKGROUND("GUI Background", 
+            { CinnamonTheme.guiBackground }, 
+            { color -> setThemeColor("guiBackground", color) }),
+        GUI_BORDER("GUI Border", 
+            { CinnamonTheme.guiBorder }, 
+            { color -> setThemeColor("guiBorder", color) }),
+        BACKGROUND_TOP("Background Top", 
+            { CinnamonTheme.backgroundTop }, 
+            { color -> setThemeColor("backgroundTop", color) }),
+        BACKGROUND_BOTTOM("Background Bottom", 
+            { CinnamonTheme.backgroundBottom }, 
+            { color -> setThemeColor("backgroundBottom", color) }),
+        HEADER_BACKGROUND("Header Background", 
+            { CinnamonTheme.headerBackground }, 
+            { color -> setThemeColor("headerBackground", color) }),
+        FOOTER_BACKGROUND("Footer Background", 
+            { CinnamonTheme.footerBackground }, 
+            { color -> setThemeColor("footerBackground", color) }),
+        CONTENT_BACKGROUND("Content Background", 
+            { CinnamonTheme.contentBackground }, 
+            { color -> setThemeColor("contentBackground", color) }),
+        CARD_BACKGROUND("Card Background", 
+            { CinnamonTheme.cardBackground }, 
+            { color -> setThemeColor("cardBackground", color) }),
+        ACCENT_COLOR("Accent Color", 
+            { CinnamonTheme.accentColor }, 
+            { color -> setThemeColor("accentColor", color) }),
+        PRIMARY_TEXT("Primary Text", 
+            { CinnamonTheme.primaryTextColor }, 
+            { color -> setThemeColor("primaryTextColor", color) }),
+        SECONDARY_TEXT("Secondary Text", 
+            { CinnamonTheme.secondaryTextColor }, 
+            { color -> setThemeColor("secondaryTextColor", color) }),
+        BUTTON_BACKGROUND("Button Background", 
+            { CinnamonTheme.buttonBackground }, 
+            { color -> setThemeColor("buttonBackground", color) }),
+        SUCCESS_COLOR("Success Color", 
+            { CinnamonTheme.successColor }, 
+            { color -> setThemeColor("successColor", color) }),
+        WARNING_COLOR("Warning Color", 
+            { CinnamonTheme.warningColor }, 
+            { color -> setThemeColor("warningColor", color) }),
+        ERROR_COLOR("Error Color", 
+            { CinnamonTheme.errorColor }, 
+            { color -> setThemeColor("errorColor", color) })
+    }
+    
+    companion object {
+        // Helper function to set theme colors (you'll need to implement this in CinnamonTheme)
+        private fun setThemeColor(fieldName: String, color: Int) {
+            // This would use reflection or a theme manager to update the color
+            // For now, just print the change
+            println("Setting $fieldName to ${String.format("#%08X", color)}")
+        }
+    }
+    
+    override fun init() {
+        super.init()
+        
+        // Calculate fixed picker position (centered on screen)
+        pickerX = (width - pickerWidth) / 2
+        pickerY = (height - pickerHeight) / 2
     }
     
     override fun initializeComponents() {
         val centerX = guiX + guiWidth / 2
         val contentY = getContentY()
+        val buttonY = contentY + getContentHeight() - 45 // Fixed button position
         
-        // Back button
+        // Clear existing buttons to prevent duplicates
+        clearButtons()
+        
+        // Back button - fixed position
         addButton(CinnamonButton(
             guiX + PADDING,
-            contentY + getContentHeight() - 35,
+            buttonY,
             100,
             CinnamonTheme.BUTTON_HEIGHT,
             Text.literal("Back"),
             { _, _ -> CinnamonGuiManager.closeCurrentScreen() }
         ))
         
-        // Reset to defaults button
+        // Reset to defaults button - fixed position
         addButton(CinnamonButton(
             centerX - 50,
-            contentY + getContentHeight() - 35,
+            buttonY,
             100,
             CinnamonTheme.BUTTON_HEIGHT,
             Text.literal("Reset"),
             { _, _ -> resetToDefaults() }
         ))
         
-        // Save theme button
+        // Save theme button - fixed position
         addButton(CinnamonButton(
             guiX + guiWidth - PADDING - 100,
-            contentY + getContentHeight() - 35,
+            buttonY,
             100,
             CinnamonTheme.BUTTON_HEIGHT,
             Text.literal("Save"),
@@ -80,7 +139,22 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         ))
     }
     
+    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        // Always render the base screen
+        super.render(context, mouseX, mouseY, delta)
+        
+        // Render color picker on top if open
+        if (showColorPicker) {
+            renderColorPicker(context, mouseX, mouseY)
+        }
+    }
+    
     override fun renderContent(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        // Don't render content if color picker is open to prevent overlap
+        if (showColorPicker) {
+            return
+        }
+        
         val centerX = guiX + guiWidth / 2
         val contentY = getContentY()
         
@@ -120,18 +194,13 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         
         // Render color list
         renderColorList(context, mouseX, mouseY)
-        
-        // Render color picker if open
-        if (showColorPicker) {
-            renderColorPicker(context, mouseX, mouseY)
-        }
     }
     
     private fun renderColorList(context: DrawContext, mouseX: Int, mouseY: Int) {
         val listX = guiX + 40
         val listY = getContentY() + 80
         val listWidth = guiWidth - 80
-        val listHeight = getContentHeight() - 160
+        val listHeight = getContentHeight() - 170 // Leave space for buttons
         
         // Background for color list
         context.fill(listX, listY, listX + listWidth, listY + listHeight, CinnamonTheme.contentBackground)
@@ -199,14 +268,11 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     }
     
     private fun renderColorPicker(context: DrawContext, mouseX: Int, mouseY: Int) {
-        val pickerWidth = 280
-        val pickerHeight = 320
-        val pickerBg = 0xE0202020.toInt()
-        
-        // Semi-transparent overlay
-        context.fill(0, 0, width, height, 0x80000000.toInt())
+        // Full screen overlay to block interaction with background
+        context.fill(0, 0, width, height, 0xC0000000.toInt())
         
         // Picker background
+        val pickerBg = 0xF0202020.toInt()
         context.fill(pickerX, pickerY, pickerX + pickerWidth, pickerY + pickerHeight, pickerBg)
         context.drawBorder(pickerX, pickerY, pickerWidth, pickerHeight, CinnamonTheme.accentColor)
         
@@ -217,32 +283,32 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
             textRenderer,
             Text.literal(title),
             pickerX + (pickerWidth - titleWidth) / 2,
-            pickerY + 10,
+            pickerY + 15,
             CinnamonTheme.primaryTextColor,
-            false
+            true
         )
         
         // Color wheel area
         val wheelSize = 180
         val wheelX = pickerX + (pickerWidth - wheelSize) / 2
-        val wheelY = pickerY + 35
+        val wheelY = pickerY + 45
         
         renderColorWheel(context, wheelX, wheelY, wheelSize)
         
         // Brightness slider
-        val sliderY = wheelY + wheelSize + 15
+        val sliderY = wheelY + wheelSize + 20
         renderBrightnessSlider(context, pickerX + 20, sliderY, pickerWidth - 40, 20)
         
         // Alpha slider
-        val alphaY = sliderY + 30
+        val alphaY = sliderY + 35
         renderAlphaSlider(context, pickerX + 20, alphaY, pickerWidth - 40, 20)
         
         // Preview and hex input
-        val previewY = alphaY + 35
-        renderColorPreview(context, pickerX + 20, previewY, pickerWidth - 40, 25)
+        val previewY = alphaY + 40
+        renderColorPreview(context, pickerX + 20, previewY, pickerWidth - 40, 30)
         
         // Buttons
-        val buttonY = previewY + 35
+        val buttonY = previewY + 45
         val buttonWidth = 80
         val buttonSpacing = 20
         val totalButtonWidth = buttonWidth * 2 + buttonSpacing
@@ -287,37 +353,37 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         val centerY = y + size / 2
         val radius = size / 2 - 5
         
-        // Simple color wheel representation using filled rectangles
-        val steps = 32
-        for (i in 0 until steps) {
-            val angle = (i * 360.0 / steps).toFloat()
-            val hueColor = hsvToRgb(angle, 1f, 1f)
-            
-            val x1 = centerX + (cos(Math.toRadians(angle.toDouble())) * radius * 0.7).toInt()
-            val y1 = centerY + (sin(Math.toRadians(angle.toDouble())) * radius * 0.7).toInt()
-            val x2 = centerX + (cos(Math.toRadians(angle.toDouble())) * radius).toInt()
-            val y2 = centerY + (sin(Math.toRadians(angle.toDouble())) * radius).toInt()
-            
-            // Draw radial line
-            context.drawHorizontalLine(minOf(x1, x2), maxOf(x1, x2), y1, hueColor)
+        // Draw color wheel using concentric circles
+        for (r in 0 until radius step 2) {
+            for (angle in 0 until 360 step 4) {
+                val rad = Math.toRadians(angle.toDouble())
+                val px = centerX + (cos(rad) * r).toInt()
+                val py = centerY + (sin(rad) * r).toInt()
+                
+                val sat = r.toFloat() / radius
+                val hueColor = hsvToRgb(angle.toFloat(), sat, brightness)
+                
+                context.fill(px, py, px + 2, py + 2, hueColor)
+            }
         }
         
-        // Center saturation/brightness area
-        val innerSize = (radius * 0.6).toInt()
-        context.fill(centerX - innerSize, centerY - innerSize, centerX + innerSize, centerY + innerSize, 
-                    hsvToRgb(hue, saturation, brightness))
+        // Draw selection indicator
+        val selRadius = saturation * radius
+        val selAngle = Math.toRadians(hue.toDouble())
+        val selX = centerX + (cos(selAngle) * selRadius).toInt()
+        val selY = centerY + (sin(selAngle) * selRadius).toInt()
         
-        // Selection indicator
-        val selX = centerX + (cos(Math.toRadians(hue.toDouble())) * radius * saturation * 0.8).toInt()
-        val selY = centerY + (sin(Math.toRadians(hue.toDouble())) * radius * saturation * 0.8).toInt()
-        context.drawBorder(selX - 3, selY - 3, 6, 6, 0xFFFFFFFF.toInt())
+        // White border
+        context.drawBorder(selX - 4, selY - 4, 8, 8, 0xFFFFFFFF.toInt())
+        // Black inner border for visibility
+        context.drawBorder(selX - 3, selY - 3, 6, 6, 0xFF000000.toInt())
     }
     
     private fun renderBrightnessSlider(context: DrawContext, x: Int, y: Int, width: Int, height: Int) {
         // Gradient background
         for (i in 0 until width) {
-            val brightness = i.toFloat() / width
-            val color = hsvToRgb(hue, saturation, brightness)
+            val brightnessVal = i.toFloat() / width
+            val color = hsvToRgb(hue, saturation, brightnessVal)
             context.fill(x + i, y, x + i + 1, y + height, color)
         }
         
@@ -326,6 +392,7 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         // Slider handle
         val handleX = x + (brightness * width).toInt() - 2
         context.fill(handleX, y - 2, handleX + 4, y + height + 2, 0xFFFFFFFF.toInt())
+        context.drawBorder(handleX - 1, y - 3, 6, height + 4, 0xFF000000.toInt())
     }
     
     private fun renderAlphaSlider(context: DrawContext, x: Int, y: Int, width: Int, height: Int) {
@@ -334,15 +401,17 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         for (i in 0 until width step checkerSize) {
             for (j in 0 until height step checkerSize) {
                 val color = if ((i / checkerSize + j / checkerSize) % 2 == 0) 0xFFCCCCCC.toInt() else 0xFF999999.toInt()
-                context.fill(x + i, y + j, x + i + checkerSize, y + j + checkerSize, color)
+                val endX = minOf(x + i + checkerSize, x + width)
+                val endY = minOf(y + j + checkerSize, y + height)
+                context.fill(x + i, y + j, endX, endY, color)
             }
         }
         
         // Alpha gradient
         val baseColor = hsvToRgb(hue, saturation, brightness)
         for (i in 0 until width) {
-            val alpha = i.toFloat() / width
-            val color = (baseColor and 0x00FFFFFF) or ((alpha * 255).toInt() shl 24)
+            val alphaVal = i.toFloat() / width
+            val color = (baseColor and 0x00FFFFFF) or ((alphaVal * 255).toInt() shl 24)
             context.fill(x + i, y, x + i + 1, y + height, color)
         }
         
@@ -351,20 +420,23 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         // Slider handle
         val handleX = x + (alpha * width).toInt() - 2
         context.fill(handleX, y - 2, handleX + 4, y + height + 2, 0xFFFFFFFF.toInt())
+        context.drawBorder(handleX - 1, y - 3, 6, height + 4, 0xFF000000.toInt())
     }
     
     private fun renderColorPreview(context: DrawContext, x: Int, y: Int, width: Int, height: Int) {
-        val currentColor = hsvToRgb(hue, saturation, brightness)
-        val finalColor = (currentColor and 0x00FFFFFF) or ((alpha * 255).toInt() shl 24)
-        
-        // Checkerboard background
+        // Checkerboard background for transparency preview
         val checkerSize = 8
         for (i in 0 until width step checkerSize) {
             for (j in 0 until height step checkerSize) {
                 val color = if ((i / checkerSize + j / checkerSize) % 2 == 0) 0xFFCCCCCC.toInt() else 0xFF999999.toInt()
-                context.fill(x + i, y + j, x + i + checkerSize, y + j + checkerSize, color)
+                val endX = minOf(x + i + checkerSize, x + width)
+                val endY = minOf(y + j + checkerSize, y + height)
+                context.fill(x + i, y + j, endX, endY, color)
             }
         }
+        
+        val currentColor = hsvToRgb(hue, saturation, brightness)
+        val finalColor = (currentColor and 0x00FFFFFF) or ((alpha * 255).toInt() shl 24)
         
         context.fill(x, y, x + width, y + height, finalColor)
         context.drawBorder(x, y, width, height, CinnamonTheme.borderColor)
@@ -373,7 +445,10 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         val hexValue = String.format("#%08X", finalColor)
         val textX = x + (width - textRenderer.getWidth(hexValue)) / 2
         val textY = y + (height - textRenderer.fontHeight) / 2
-        context.drawText(textRenderer, Text.literal(hexValue), textX, textY, 0xFFFFFFFF.toInt(), true)
+        
+        // Draw text with outline for better visibility
+        context.drawText(textRenderer, Text.literal(hexValue), textX + 1, textY + 1, 0xFF000000.toInt(), false)
+        context.drawText(textRenderer, Text.literal(hexValue), textX, textY, 0xFFFFFFFF.toInt(), false)
     }
     
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -385,14 +460,14 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         val listX = guiX + 40
         val listY = getContentY() + 80
         val listWidth = guiWidth - 80
-        val listHeight = getContentHeight() - 160
+        val listHeight = getContentHeight() - 170
         
         if (mouseX >= listX && mouseX < listX + listWidth && mouseY >= listY && mouseY < listY + listHeight) {
             val colors = ColorType.values()
             val clickedIndex = ((mouseY - listY - 10 + scrollOffset) / itemHeight).toInt()
             
             if (clickedIndex >= 0 && clickedIndex < colors.size) {
-                openColorPicker(colors[clickedIndex], mouseX.toInt(), mouseY.toInt())
+                openColorPicker(colors[clickedIndex])
                 return true
             }
         }
@@ -401,9 +476,6 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     }
     
     private fun handleColorPickerClick(mouseX: Int, mouseY: Int, button: Int): Boolean {
-        val pickerWidth = 280
-        val pickerHeight = 320
-        
         // Check if clicking outside picker to close
         if (mouseX < pickerX || mouseX >= pickerX + pickerWidth || mouseY < pickerY || mouseY >= pickerY + pickerHeight) {
             showColorPicker = false
@@ -411,7 +483,7 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         }
         
         // Handle button clicks
-        val buttonY = pickerY + 275
+        val buttonY = pickerY + 290
         val buttonWidth = 80
         val buttonSpacing = 20
         val totalButtonWidth = buttonWidth * 2 + buttonSpacing
@@ -437,10 +509,9 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     }
     
     private fun handleColorControlClicks(mouseX: Int, mouseY: Int) {
-        val pickerWidth = 280
         val wheelSize = 180
         val wheelX = pickerX + (pickerWidth - wheelSize) / 2
-        val wheelY = pickerY + 35
+        val wheelY = pickerY + 45
         val centerX = wheelX + wheelSize / 2
         val centerY = wheelY + wheelSize / 2
         val radius = wheelSize / 2 - 5
@@ -459,13 +530,13 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         }
         
         // Brightness slider click
-        val sliderY = wheelY + wheelSize + 15
+        val sliderY = wheelY + wheelSize + 20
         if (mouseX >= pickerX + 20 && mouseX < pickerX + pickerWidth - 20 && mouseY >= sliderY && mouseY < sliderY + 20) {
             brightness = ((mouseX - pickerX - 20).toFloat() / (pickerWidth - 40)).coerceIn(0f, 1f)
         }
         
         // Alpha slider click
-        val alphaY = sliderY + 30
+        val alphaY = sliderY + 35
         if (mouseX >= pickerX + 20 && mouseX < pickerX + pickerWidth - 20 && mouseY >= alphaY && mouseY < alphaY + 20) {
             alpha = ((mouseX - pickerX - 20).toFloat() / (pickerWidth - 40)).coerceIn(0f, 1f)
         }
@@ -474,10 +545,11 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
         if (!showColorPicker) {
             val listY = getContentY() + 80
-            val listHeight = getContentHeight() - 160
+            val listHeight = getContentHeight() - 170
             
             if (mouseY >= listY && mouseY < listY + listHeight) {
-                scrollOffset = (scrollOffset - verticalAmount.toInt() * 20).coerceAtLeast(0)
+                val maxScroll = maxOf(0, ColorType.values().size * itemHeight - listHeight)
+                scrollOffset = (scrollOffset - verticalAmount.toInt() * 20).coerceIn(0, maxScroll)
                 return true
             }
         }
@@ -485,15 +557,9 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
     
-    private fun openColorPicker(colorType: ColorType, x: Int, y: Int) {
+    private fun openColorPicker(colorType: ColorType) {
         selectedColorType = colorType
         showColorPicker = true
-        
-        // Position picker near click but keep it on screen
-        val pickerWidth = 280
-        val pickerHeight = 320
-        pickerX = (x - pickerWidth / 2).coerceIn(50, width - pickerWidth - 50)
-        pickerY = (y - pickerHeight / 2).coerceIn(50, height - pickerHeight - 50)
         
         // Initialize color picker with current color
         val currentColor = colorType.currentColor()
@@ -514,12 +580,14 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     
     private fun resetToDefaults() {
         // Reset all colors to their default values
-        // This would restore the original CinnamonTheme values
+        println("Resetting theme to defaults...")
+        // You would implement theme reset logic here
     }
     
     private fun saveTheme() {
         // Save the current theme configuration to file
-        // This would persist the theme changes
+        println("Saving theme...")
+        // You would implement theme saving logic here
     }
     
     // Color conversion utilities
@@ -567,6 +635,11 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     }
     
     override fun renderFooter(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        // Don't render footer if color picker is open
+        if (showColorPicker) {
+            return
+        }
+        
         super.renderFooter(context, mouseX, mouseY, delta)
         
         // Draw theme status
@@ -591,5 +664,11 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
             CinnamonTheme.secondaryTextColor,
             false
         )
+    }
+    
+    // Helper function to clear buttons (you may need to implement this in your base class)
+    private fun clearButtons() {
+        // This would clear the button list to prevent duplicates
+        // Implementation depends on your CinnamonScreen base class
     }
 }
