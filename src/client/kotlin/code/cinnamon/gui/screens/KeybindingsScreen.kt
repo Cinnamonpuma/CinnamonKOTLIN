@@ -7,7 +7,7 @@ import org.lwjgl.glfw.GLFW
 import code.cinnamon.gui.CinnamonScreen
 import code.cinnamon.gui.CinnamonGuiManager
 import code.cinnamon.gui.components.CinnamonButton
-import code.cinnamon.gui.CinnamonTheme // Added missing import
+import code.cinnamon.gui.theme.CinnamonTheme
 import code.cinnamon.keybindings.KeybindingManager
 import kotlin.math.max
 import kotlin.math.min

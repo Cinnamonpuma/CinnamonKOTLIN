@@ -2,6 +2,7 @@ package code.cinnamon.gui.screens
 
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.text.Text
+import code.cinnamon.gui.theme.CinnamonTheme
 import code.cinnamon.gui.CinnamonScreen
 import code.cinnamon.gui.CinnamonGuiManager
 import code.cinnamon.gui.components.CinnamonButton
