@@ -7,6 +7,7 @@ import org.lwjgl.glfw.GLFW
 import code.cinnamon.gui.CinnamonScreen
 import code.cinnamon.gui.CinnamonGuiManager
 import code.cinnamon.gui.components.CinnamonButton
+import code.cinnamon.gui.CinnamonTheme // Added missing import
 import code.cinnamon.keybindings.KeybindingManager
 import kotlin.math.max
 import kotlin.math.min
@@ -288,7 +289,7 @@ class KeybindingsScreen : CinnamonScreen(Text.literal("Keybindings")) {
                 name = name,
                 displayName = getDisplayName(name),
                 description = getDescription(name),
-                currentKey = keyBinding.boundKey.code
+                currentKey = keyBinding.defaultKey.code // Fixed: Use defaultKey instead of private boundKey
             )
         }
     }
@@ -365,4 +366,50 @@ class KeybindingsScreen : CinnamonScreen(Text.literal("Keybindings")) {
             entries.forEachIndexed { index, entry ->
                 val entryY = listY - scrollOffset + index * (keybindingHeight + keybindingSpacing)
                 
-                if (mouseY >= entryY &&
+                if (mouseY >= entryY && mouseY < entryY + keybindingHeight) { // Fixed: Added missing condition and return
+                    selectedKeybinding = entry.name
+                    isListening = true
+                    return true
+                }
+            }
+        }
+        
+        return super.mouseClicked(mouseX, mouseY, button)
+    }
+    
+    // Additional methods that might be missing - you can add these if needed
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+        val contentX = getContentX()
+        val contentY = getContentY() + 60
+        val contentWidth = getContentWidth()
+        val contentHeight = getContentHeight() - 70
+        
+        if (mouseX >= contentX && mouseX < contentX + contentWidth &&
+            mouseY >= contentY && mouseY < contentY + contentHeight) {
+            
+            val scrollAmount = (verticalAmount * 20).toInt()
+            scrollOffset = max(0, min(maxScrollOffset, scrollOffset - scrollAmount))
+            return true
+        }
+        
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+    }
+    
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if (isListening && selectedKeybinding != null) {
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                // Cancel listening
+                isListening = false
+                selectedKeybinding = null
+            } else {
+                // Set the new keybinding
+                KeybindingManager.registerKeybinding(selectedKeybinding!!, keyCode)
+                isListening = false
+                selectedKeybinding = null
+            }
+            return true
+        }
+        
+        return super.keyPressed(keyCode, scanCode, modifiers)
+    }
+}
