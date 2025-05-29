@@ -283,6 +283,17 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     }
     
     private fun renderColorPicker(context: DrawContext, mouseX: Int, mouseY: Int) {
+        // Define consistent Y positions for rendering
+        val titleY_render = pickerY + 5 // Adjusted for tighter packing
+        val wheelY_render = pickerY + 20
+        val wheelSize = 180 // Unchanged
+        val sliderHeight = 20 // Unchanged
+        val brightnessSliderY_render = wheelY_render + wheelSize + 5 // pickerY + 20 + 180 + 5 = pickerY + 205
+        val alphaSliderY_render = brightnessSliderY_render + sliderHeight + 5 // pickerY + 205 + 20 + 5 = pickerY + 230
+        val buttonsY_render = pickerY + 290 // Target Y for buttons (used by click handler)
+        val previewBoxHeight = 30 // Unchanged
+        val previewBoxY_render = buttonsY_render - previewBoxHeight - 5 // pickerY + 290 - 30 - 5 = pickerY + 255
+
         // Full screen overlay to block interaction with background
         context.fill(0, 0, width, height, 0xC0000000.toInt())
         
@@ -298,32 +309,34 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
             textRenderer,
             Text.literal(title),
             pickerX + (pickerWidth - titleWidth) / 2,
-            pickerY + 15,
+            titleY_render, // Use new title Y
             CinnamonTheme.primaryTextColor,
             true
         )
         
         // Color wheel area
-        val wheelSize = 180
-        val wheelX = pickerX + (pickerWidth - wheelSize) / 2
-        val wheelY = pickerY + 45
+        // val wheelSize = 180 // Defined above
+        val wheelX = pickerX + (pickerWidth - wheelSize) / 2 // X position remains the same
+        // val wheelY_render = pickerY + 20 // Defined above
         
-        renderColorWheel(context, wheelX, wheelY, wheelSize)
+        renderColorWheel(context, wheelX, wheelY_render, wheelSize)
         
         // Brightness slider
-        val sliderY = wheelY + wheelSize + 20
-        renderBrightnessSlider(context, pickerX + 20, sliderY, pickerWidth - 40, 20)
+        // val sliderHeight = 20 // Defined above
+        // val brightnessSliderY_render = wheelY_render + wheelSize + 5 // Defined above
+        renderBrightnessSlider(context, pickerX + 20, brightnessSliderY_render, pickerWidth - 40, sliderHeight)
         
         // Alpha slider
-        val alphaY = sliderY + 35
-        renderAlphaSlider(context, pickerX + 20, alphaY, pickerWidth - 40, 20)
+        // val alphaSliderY_render = brightnessSliderY_render + sliderHeight + 5 // Defined above
+        renderAlphaSlider(context, pickerX + 20, alphaSliderY_render, pickerWidth - 40, sliderHeight)
         
         // Preview and hex input
-        val previewY = alphaY + 40
-        renderColorPreview(context, pickerX + 20, previewY, pickerWidth - 40, 30)
+        // val previewBoxHeight = 30 // Defined above
+        // val previewBoxY_render = buttonsY_render - previewBoxHeight - 5 // Defined above
+        renderColorPreview(context, pickerX + 20, previewBoxY_render, pickerWidth - 40, previewBoxHeight)
         
         // Buttons
-        val buttonY = previewY + 45
+        // val buttonsY_render = pickerY + 290 // Defined above
         val buttonWidth = 80
         val buttonSpacing = 20
         val totalButtonWidth = buttonWidth * 2 + buttonSpacing
@@ -331,16 +344,16 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         
         // Apply button
         val applyHovered = mouseX >= buttonStartX && mouseX < buttonStartX + buttonWidth && 
-                          mouseY >= buttonY && mouseY < buttonY + 25
+                          mouseY >= buttonsY_render && mouseY < buttonsY_render + 25
         context.fill(
-            buttonStartX, buttonY, buttonStartX + buttonWidth, buttonY + 25,
+            buttonStartX, buttonsY_render, buttonStartX + buttonWidth, buttonsY_render + 25,
             if (applyHovered) CinnamonTheme.accentColorHover else CinnamonTheme.accentColor
         )
         context.drawText(
             textRenderer,
             Text.literal("Apply"),
             buttonStartX + (buttonWidth - textRenderer.getWidth("Apply")) / 2,
-            buttonY + 8,
+            buttonsY_render + 8,
             0xFFFFFFFF.toInt(),
             false
         )
@@ -348,16 +361,16 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         // Cancel button
         val cancelX = buttonStartX + buttonWidth + buttonSpacing
         val cancelHovered = mouseX >= cancelX && mouseX < cancelX + buttonWidth && 
-                           mouseY >= buttonY && mouseY < buttonY + 25
+                           mouseY >= buttonsY_render && mouseY < buttonsY_render + 25
         context.fill(
-            cancelX, buttonY, cancelX + buttonWidth, buttonY + 25,
+            cancelX, buttonsY_render, cancelX + buttonWidth, buttonsY_render + 25,
             if (cancelHovered) CinnamonTheme.buttonBackgroundHover else CinnamonTheme.buttonBackground
         )
         context.drawText(
             textRenderer,
             Text.literal("Cancel"),
             cancelX + (buttonWidth - textRenderer.getWidth("Cancel")) / 2,
-            buttonY + 8,
+            buttonsY_render + 8,
             CinnamonTheme.primaryTextColor,
             false
         )
@@ -468,7 +481,22 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         if (showColorPicker) {
-            return handleColorPickerClick(mouseX.toInt(), mouseY.toInt(), button)
+            // println("[ThemeManagerScreen] mouseClicked detected while showColorPicker is true.") // <--- REMOVE THIS LINE
+            val mX = mouseX.toInt()
+            val mY = mouseY.toInt()
+
+            // Check if the click occurred within the bounds of the color picker
+            if (mX >= pickerX && mX < pickerX + pickerWidth && mY >= pickerY && mY < pickerY + pickerHeight) {
+                // Click is INSIDE the color picker's main rectangle.
+                // Let handleColorPickerClick manage interaction with picker components.
+                return handleColorPickerClick(mX, mY, button)
+            } else {
+                // Click is OUTSIDE the color picker's main rectangle, but the overlay is active.
+                // This means the user clicked on the overlay part that is not the picker itself.
+                // Consume the event and close the picker.
+                showColorPicker = false
+                return true 
+            }
         }
         
         // Handle color list clicks
@@ -491,14 +519,12 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     }
     
     private fun handleColorPickerClick(mouseX: Int, mouseY: Int, button: Int): Boolean {
-        // Check if clicking outside picker to close
-        if (mouseX < pickerX || mouseX >= pickerX + pickerWidth || mouseY < pickerY || mouseY >= pickerY + pickerHeight) {
-            showColorPicker = false
-            return true
-        }
+        // println("[ThemeManagerScreen] handleColorPickerClick called. mouseX: $mouseX, mouseY: $mouseY") // <--- REMOVE THIS LINE
+        // NOTE: The check for clicks outside the picker's main rectangle has been moved to mouseClicked.
+        // This method now assumes the click is within pickerX, pickerY, pickerWidth, pickerHeight.
         
         // Handle button clicks
-        val buttonY = pickerY + 290
+        val buttonY = pickerY + 290 // This is the target Y for buttons
         val buttonWidth = 80
         val buttonSpacing = 20
         val totalButtonWidth = buttonWidth * 2 + buttonSpacing
@@ -508,6 +534,7 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
             if (mouseX >= buttonStartX && mouseX < buttonStartX + buttonWidth) {
                 // Apply button
                 applyColor()
+                ThemeConfigManager.saveTheme() // Save theme after applying color
                 showColorPicker = false
                 return true
             } else if (mouseX >= buttonStartX + buttonWidth + buttonSpacing && mouseX < buttonStartX + buttonWidth * 2 + buttonSpacing) {
@@ -526,13 +553,13 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     private fun handleColorControlClicks(mouseX: Int, mouseY: Int) {
         val wheelSize = 180
         val wheelX = pickerX + (pickerWidth - wheelSize) / 2
-        val wheelY = pickerY + 45
+        val wheelY_click = pickerY + 20 // Consistent with wheelY_render
         val centerX = wheelX + wheelSize / 2
-        val centerY = wheelY + wheelSize / 2
+        val centerY = wheelY_click + wheelSize / 2
         val radius = wheelSize / 2 - 5
         
         // Color wheel click
-        if (mouseX >= wheelX && mouseX < wheelX + wheelSize && mouseY >= wheelY && mouseY < wheelY + wheelSize) {
+        if (mouseX >= wheelX && mouseX < wheelX + wheelSize && mouseY >= wheelY_click && mouseY < wheelY_click + wheelSize) {
             val dx = mouseX - centerX
             val dy = mouseY - centerY
             val distance = sqrt((dx * dx + dy * dy).toDouble()).toFloat()
@@ -544,15 +571,16 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
             }
         }
         
+        val sliderHeight = 20 // Consistent with rendering
         // Brightness slider click
-        val sliderY = wheelY + wheelSize + 20
-        if (mouseX >= pickerX + 20 && mouseX < pickerX + pickerWidth - 20 && mouseY >= sliderY && mouseY < sliderY + 20) {
+        val brightnessSliderY_click = pickerY + 205 // Consistent with brightnessSliderY_render
+        if (mouseX >= pickerX + 20 && mouseX < pickerX + pickerWidth - 20 && mouseY >= brightnessSliderY_click && mouseY < brightnessSliderY_click + sliderHeight) {
             brightness = ((mouseX - pickerX - 20).toFloat() / (pickerWidth - 40)).coerceIn(0f, 1f)
         }
         
         // Alpha slider click
-        val alphaY = sliderY + 35
-        if (mouseX >= pickerX + 20 && mouseX < pickerX + pickerWidth - 20 && mouseY >= alphaY && mouseY < alphaY + 20) {
+        val alphaSliderY_click = pickerY + 230 // Consistent with alphaSliderY_render
+        if (mouseX >= pickerX + 20 && mouseX < pickerX + pickerWidth - 20 && mouseY >= alphaSliderY_click && mouseY < alphaSliderY_click + sliderHeight) {
             alpha = ((mouseX - pickerX - 20).toFloat() / (pickerWidth - 40)).coerceIn(0f, 1f)
         }
     }
@@ -589,7 +617,18 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         selectedColorType?.let { colorType ->
             val finalColor = hsvToRgb(hue, saturation, brightness)
             val colorWithAlpha = (finalColor and 0x00FFFFFF) or ((alpha * 255).toInt() shl 24)
+            
+            // Logging before setter
+            println("[ThemeManagerScreen] Applying color for: ${colorType.displayName}")
+            println("[ThemeManagerScreen] HSVA values: H=${hue}, S=${saturation}, V=${brightness}, A=${alpha}")
+            println("[ThemeManagerScreen] Calculated RGBA: ${String.format("#%08X", colorWithAlpha)}")
+            
             colorType.setter(colorWithAlpha)
+            
+            // Logging after setter
+            println("[ThemeManagerScreen] Setter called for ${colorType.displayName}. Current theme value: ${String.format("#%08X", colorType.currentColor())}")
+
+            this.initializeComponents() // Refresh UI components
         }
     }
     

@@ -57,9 +57,12 @@ object ThemeConfigManager {
                 warningColor = CinnamonTheme.warningColor,
                 errorColor = CinnamonTheme.errorColor
             )
+
+           
             
             val jsonString = json.encodeToString(config)
             themeFile.writeText(jsonString)
+            println("Theme saved successfully to ${themeFile.absolutePath}")
         } catch (e: Exception) {
             println("Failed to save theme: ${e.message}")
         }
