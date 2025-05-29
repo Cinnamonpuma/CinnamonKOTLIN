@@ -9,12 +9,14 @@ import org.lwjgl.glfw.GLFW
 import code.cinnamon.gui.CinnamonGuiManager
 import code.cinnamon.modules.ModuleManager
 import code.cinnamon.keybindings.KeybindingManager
+import code.cinnamon.gui.theme.ThemeConfigManager
 
 class CinnamonClientMod : ClientModInitializer {
     private lateinit var openGuiKeybinding: KeyBinding
     
     override fun onInitializeClient() {
         // Initialize managers
+        ThemeConfigManager.loadTheme()
         ModuleManager.initialize()
         KeybindingManager.initialize()
         

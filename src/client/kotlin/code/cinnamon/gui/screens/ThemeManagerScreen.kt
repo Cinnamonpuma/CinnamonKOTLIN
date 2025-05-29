@@ -7,6 +7,7 @@ import code.cinnamon.gui.CinnamonGuiManager
 import code.cinnamon.gui.components.CinnamonButton
 import code.cinnamon.gui.theme.CinnamonTheme
 import kotlin.math.*
+import code.cinnamon.gui.theme.ThemeConfigManager
 
 class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     
@@ -30,64 +31,78 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     private val itemHeight = 35
     private val maxVisibleItems = 12
     
-    enum class ColorType(
-        val displayName: String, 
-        val currentColor: () -> Int, 
-        val setter: (Int) -> Unit
-    ) {
-        GUI_BACKGROUND("GUI Background", 
-            { CinnamonTheme.guiBackground }, 
-            { color -> setThemeColor("guiBackground", color) }),
-        GUI_BORDER("GUI Border", 
-            { CinnamonTheme.guiBorder }, 
-            { color -> setThemeColor("guiBorder", color) }),
-        BACKGROUND_TOP("Background Top", 
-            { CinnamonTheme.backgroundTop }, 
-            { color -> setThemeColor("backgroundTop", color) }),
-        BACKGROUND_BOTTOM("Background Bottom", 
-            { CinnamonTheme.backgroundBottom }, 
-            { color -> setThemeColor("backgroundBottom", color) }),
-        HEADER_BACKGROUND("Header Background", 
-            { CinnamonTheme.headerBackground }, 
-            { color -> setThemeColor("headerBackground", color) }),
-        FOOTER_BACKGROUND("Footer Background", 
-            { CinnamonTheme.footerBackground }, 
-            { color -> setThemeColor("footerBackground", color) }),
-        CONTENT_BACKGROUND("Content Background", 
-            { CinnamonTheme.contentBackground }, 
-            { color -> setThemeColor("contentBackground", color) }),
-        CARD_BACKGROUND("Card Background", 
-            { CinnamonTheme.cardBackground }, 
-            { color -> setThemeColor("cardBackground", color) }),
-        ACCENT_COLOR("Accent Color", 
-            { CinnamonTheme.accentColor }, 
-            { color -> setThemeColor("accentColor", color) }),
-        PRIMARY_TEXT("Primary Text", 
-            { CinnamonTheme.primaryTextColor }, 
-            { color -> setThemeColor("primaryTextColor", color) }),
-        SECONDARY_TEXT("Secondary Text", 
-            { CinnamonTheme.secondaryTextColor }, 
-            { color -> setThemeColor("secondaryTextColor", color) }),
-        BUTTON_BACKGROUND("Button Background", 
-            { CinnamonTheme.buttonBackground }, 
-            { color -> setThemeColor("buttonBackground", color) }),
-        SUCCESS_COLOR("Success Color", 
-            { CinnamonTheme.successColor }, 
-            { color -> setThemeColor("successColor", color) }),
-        WARNING_COLOR("Warning Color", 
-            { CinnamonTheme.warningColor }, 
-            { color -> setThemeColor("warningColor", color) }),
-        ERROR_COLOR("Error Color", 
-            { CinnamonTheme.errorColor }, 
-            { color -> setThemeColor("errorColor", color) })
-    }
-    
-    companion object {
-        // Helper function to set theme colors (you'll need to implement this in CinnamonTheme)
-        private fun setThemeColor(fieldName: String, color: Int) {
-            // This would use reflection or a theme manager to update the color
-            // For now, just print the change
-            println("Setting $fieldName to ${String.format("#%08X", color)}")
+    enum class ColorType(val displayName: String, val currentColor: () -> Int, val setter: (Int) -> Unit) {
+        GUI_BACKGROUND("GUI Background", { CinnamonTheme.guiBackground }, { color -> 
+            CinnamonTheme.guiBackground = color 
+        }),
+        GUI_BORDER("GUI Border", { CinnamonTheme.guiBorder }, { color -> 
+            CinnamonTheme.guiBorder = color 
+        }),
+        BACKGROUND_TOP("Background Top", { CinnamonTheme.backgroundTop }, { color -> 
+            CinnamonTheme.backgroundTop = color 
+        }),
+        BACKGROUND_BOTTOM("Background Bottom", { CinnamonTheme.backgroundBottom }, { color -> 
+            CinnamonTheme.backgroundBottom = color 
+        }),
+        HEADER_BACKGROUND("Header Background", { CinnamonTheme.headerBackground }, { color -> 
+            CinnamonTheme.headerBackground = color 
+        }),
+        FOOTER_BACKGROUND("Footer Background", { CinnamonTheme.footerBackground }, { color -> 
+            CinnamonTheme.footerBackground = color 
+        }),
+        CONTENT_BACKGROUND("Content Background", { CinnamonTheme.contentBackground }, { color -> 
+            CinnamonTheme.contentBackground = color 
+        }),
+        CARD_BACKGROUND("Card Background", { CinnamonTheme.cardBackground }, { color -> 
+            CinnamonTheme.cardBackground = color
+            // Update hover color automatically
+            CinnamonTheme.cardBackgroundHover = adjustBrightness(color, 0.1f)
+        }),
+        ACCENT_COLOR("Accent Color", { CinnamonTheme.accentColor }, { color -> 
+            CinnamonTheme.accentColor = color
+            // Update related accent colors
+            CinnamonTheme.accentColorHover = adjustBrightness(color, -0.1f)
+            CinnamonTheme.accentColorPressed = adjustBrightness(color, -0.2f)
+            CinnamonTheme.primaryButtonBackground = (color and 0x00FFFFFF) or 0xE6000000.toInt()
+            CinnamonTheme.primaryButtonBackgroundHover = CinnamonTheme.accentColorHover
+            CinnamonTheme.primaryButtonBackgroundPressed = CinnamonTheme.accentColorPressed
+        }),
+        PRIMARY_TEXT("Primary Text", { CinnamonTheme.primaryTextColor }, { color -> 
+            CinnamonTheme.primaryTextColor = color 
+        }),
+        SECONDARY_TEXT("Secondary Text", { CinnamonTheme.secondaryTextColor }, { color -> 
+            CinnamonTheme.secondaryTextColor = color 
+        }),
+        BUTTON_BACKGROUND("Button Background", { CinnamonTheme.buttonBackground }, { color -> 
+            CinnamonTheme.buttonBackground = color
+            // Update related button colors
+            CinnamonTheme.buttonBackgroundHover = adjustBrightness(color, 0.1f)
+            CinnamonTheme.buttonBackgroundPressed = adjustBrightness(color, -0.1f)
+        }),
+        SUCCESS_COLOR("Success Color", { CinnamonTheme.successColor }, { color -> 
+            CinnamonTheme.successColor = color
+            CinnamonTheme.moduleEnabledColor = color
+        }),
+        WARNING_COLOR("Warning Color", { CinnamonTheme.warningColor }, { color -> 
+            CinnamonTheme.warningColor = color 
+        }),
+        ERROR_COLOR("Error Color", { CinnamonTheme.errorColor }, { color -> 
+            CinnamonTheme.errorColor = color 
+        });
+        
+        companion object {
+            private fun adjustBrightness(color: Int, factor: Float): Int {
+                val alpha = (color shr 24) and 0xFF
+                val red = ((color shr 16) and 0xFF).toFloat()
+                val green = ((color shr 8) and 0xFF).toFloat()
+                val blue = (color and 0xFF).toFloat()
+                
+                val newRed = (red + (if (factor > 0) (255 - red) * factor else red * factor)).coerceIn(0f, 255f).toInt()
+                val newGreen = (green + (if (factor > 0) (255 - green) * factor else green * factor)).coerceIn(0f, 255f).toInt()
+                val newBlue = (blue + (if (factor > 0) (255 - blue) * factor else blue * factor)).coerceIn(0f, 255f).toInt()
+                
+                return (alpha shl 24) or (newRed shl 16) or (newGreen shl 8) or newBlue
+            }
         }
     }
     
@@ -580,14 +595,15 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     
     private fun resetToDefaults() {
         // Reset all colors to their default values
-        println("Resetting theme to defaults...")
-        // You would implement theme reset logic here
+        CinnamonTheme.resetToDefaults()
     }
     
     private fun saveTheme() {
         // Save the current theme configuration to file
-        println("Saving theme...")
-        // You would implement theme saving logic here
+        ThemeConfigManager.saveTheme()
+        
+        // Optional: Add some visual feedback
+        // You could show a toast or temporary status message here
     }
     
     // Color conversion utilities
