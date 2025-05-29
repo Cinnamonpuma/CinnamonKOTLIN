@@ -32,78 +32,47 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
     private val maxVisibleItems = 12
     
     enum class ColorType(val displayName: String, val currentColor: () -> Int, val setter: (Int) -> Unit) {
-        GUI_BACKGROUND("GUI Background", { CinnamonTheme.guiBackground }, { color -> 
-            CinnamonTheme.guiBackground = color 
+        CORE_BACKGROUND_PRIMARY("Primary Background", { CinnamonTheme.coreBackgroundPrimary }, { color ->
+            CinnamonTheme.coreBackgroundPrimary = color
+            CinnamonTheme.updateDependentColors()
         }),
-        GUI_BORDER("GUI Border", { CinnamonTheme.guiBorder }, { color -> 
-            CinnamonTheme.guiBorder = color 
+        CORE_BACKGROUND_SECONDARY("Secondary Background", { CinnamonTheme.coreBackgroundSecondary }, { color ->
+            CinnamonTheme.coreBackgroundSecondary = color
+            CinnamonTheme.updateDependentColors()
         }),
-        BACKGROUND_TOP("Background Top", { CinnamonTheme.backgroundTop }, { color -> 
-            CinnamonTheme.backgroundTop = color 
+        CORE_ACCENT_PRIMARY("Primary Accent", { CinnamonTheme.coreAccentPrimary }, { color ->
+            CinnamonTheme.coreAccentPrimary = color
+            CinnamonTheme.updateDependentColors()
         }),
-        BACKGROUND_BOTTOM("Background Bottom", { CinnamonTheme.backgroundBottom }, { color -> 
-            CinnamonTheme.backgroundBottom = color 
+        CORE_ACCENT_SECONDARY("Secondary Accent/Button", { CinnamonTheme.coreAccentSecondary }, { color ->
+            CinnamonTheme.coreAccentSecondary = color
+            CinnamonTheme.updateDependentColors()
         }),
-        HEADER_BACKGROUND("Header Background", { CinnamonTheme.headerBackground }, { color -> 
-            CinnamonTheme.headerBackground = color 
+        CORE_TEXT_PRIMARY("Primary Text", { CinnamonTheme.coreTextPrimary }, { color ->
+            CinnamonTheme.coreTextPrimary = color
+            CinnamonTheme.updateDependentColors()
         }),
-        FOOTER_BACKGROUND("Footer Background", { CinnamonTheme.footerBackground }, { color -> 
-            CinnamonTheme.footerBackground = color 
+        CORE_TEXT_SECONDARY("Secondary Text", { CinnamonTheme.coreTextSecondary }, { color ->
+            CinnamonTheme.coreTextSecondary = color
+            CinnamonTheme.updateDependentColors()
         }),
-        CONTENT_BACKGROUND("Content Background", { CinnamonTheme.contentBackground }, { color -> 
-            CinnamonTheme.contentBackground = color 
+        CORE_BORDER("Border Color", { CinnamonTheme.coreBorder }, { color ->
+            CinnamonTheme.coreBorder = color
+            CinnamonTheme.updateDependentColors()
         }),
-        CARD_BACKGROUND("Card Background", { CinnamonTheme.cardBackground }, { color -> 
-            CinnamonTheme.cardBackground = color
-            // Update hover color automatically
-            CinnamonTheme.cardBackgroundHover = adjustBrightness(color, 0.1f)
+        CORE_STATUS_SUCCESS("Success Color", { CinnamonTheme.coreStatusSuccess }, { color ->
+            CinnamonTheme.coreStatusSuccess = color
+            CinnamonTheme.updateDependentColors()
         }),
-        ACCENT_COLOR("Accent Color", { CinnamonTheme.accentColor }, { color -> 
-            CinnamonTheme.accentColor = color
-            // Update related accent colors
-            CinnamonTheme.accentColorHover = adjustBrightness(color, -0.1f)
-            CinnamonTheme.accentColorPressed = adjustBrightness(color, -0.2f)
-            CinnamonTheme.primaryButtonBackground = (color and 0x00FFFFFF) or 0xE6000000.toInt()
-            CinnamonTheme.primaryButtonBackgroundHover = CinnamonTheme.accentColorHover
-            CinnamonTheme.primaryButtonBackgroundPressed = CinnamonTheme.accentColorPressed
+        CORE_STATUS_WARNING("Warning Color", { CinnamonTheme.coreStatusWarning }, { color ->
+            CinnamonTheme.coreStatusWarning = color
+            CinnamonTheme.updateDependentColors()
         }),
-        PRIMARY_TEXT("Primary Text", { CinnamonTheme.primaryTextColor }, { color -> 
-            CinnamonTheme.primaryTextColor = color 
-        }),
-        SECONDARY_TEXT("Secondary Text", { CinnamonTheme.secondaryTextColor }, { color -> 
-            CinnamonTheme.secondaryTextColor = color 
-        }),
-        BUTTON_BACKGROUND("Button Background", { CinnamonTheme.buttonBackground }, { color -> 
-            CinnamonTheme.buttonBackground = color
-            // Update related button colors
-            CinnamonTheme.buttonBackgroundHover = adjustBrightness(color, 0.1f)
-            CinnamonTheme.buttonBackgroundPressed = adjustBrightness(color, -0.1f)
-        }),
-        SUCCESS_COLOR("Success Color", { CinnamonTheme.successColor }, { color -> 
-            CinnamonTheme.successColor = color
-            CinnamonTheme.moduleEnabledColor = color
-        }),
-        WARNING_COLOR("Warning Color", { CinnamonTheme.warningColor }, { color -> 
-            CinnamonTheme.warningColor = color 
-        }),
-        ERROR_COLOR("Error Color", { CinnamonTheme.errorColor }, { color -> 
-            CinnamonTheme.errorColor = color 
+        CORE_STATUS_ERROR("Error Color", { CinnamonTheme.coreStatusError }, { color ->
+            CinnamonTheme.coreStatusError = color
+            CinnamonTheme.updateDependentColors()
         });
-        
-        companion object {
-            private fun adjustBrightness(color: Int, factor: Float): Int {
-                val alpha = (color shr 24) and 0xFF
-                val red = ((color shr 16) and 0xFF).toFloat()
-                val green = ((color shr 8) and 0xFF).toFloat()
-                val blue = (color and 0xFF).toFloat()
-                
-                val newRed = (red + (if (factor > 0) (255 - red) * factor else red * factor)).coerceIn(0f, 255f).toInt()
-                val newGreen = (green + (if (factor > 0) (255 - green) * factor else green * factor)).coerceIn(0f, 255f).toInt()
-                val newBlue = (blue + (if (factor > 0) (255 - blue) * factor else blue * factor)).coerceIn(0f, 255f).toInt()
-                
-                return (alpha shl 24) or (newRed shl 16) or (newGreen shl 8) or newBlue
-            }
-        }
+        // The companion object containing adjustBrightness has been removed as it's no longer needed.
     }
     
     override fun init() {

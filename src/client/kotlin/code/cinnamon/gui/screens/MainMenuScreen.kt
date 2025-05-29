@@ -72,18 +72,8 @@ class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
     override fun renderContent(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val centerX = guiX + guiWidth / 2
         val contentY = getContentY()
+    
         
-        // Draw logo/title area
-        val logoText = Text.literal("CINNAMON")
-        val logoWidth = textRenderer.getWidth(logoText)
-        context.drawText(
-            textRenderer,
-            logoText,
-            centerX - logoWidth / 2,
-            contentY + 20,
-            CinnamonTheme.accentColor,
-            true
-        )
         
         // Draw subtitle
         val subtitleText = Text.literal("Advanced Minecraft Client")
@@ -95,16 +85,6 @@ class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
             contentY + 40,
             CinnamonTheme.secondaryTextColor,
             false
-        )
-        
-        // Add a subtle glow effect around the logo
-        val glowColor = 0x20ffffff
-        context.fill(
-            centerX - logoWidth / 2 - 2,
-            contentY + 18,
-            centerX + logoWidth / 2 + 2,
-            contentY + 32,
-            glowColor
         )
     }
     

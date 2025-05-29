@@ -112,7 +112,7 @@ abstract class CinnamonScreen(title: Text) : Screen(title) {
         drawRoundedRect(context, guiX, guiY, guiWidth, guiHeight, theme.guiBackground)
         
         // GUI border
-        drawRoundedBorder(context, guiX, guiY, guiWidth, guiHeight, theme.guiBorder)
+        drawRoundedBorder(context, guiX, guiY, guiWidth, guiHeight, theme.borderColor) // Changed from theme.guiBorder
         
         // Header
         renderHeader(context, mouseX, mouseY, delta)
