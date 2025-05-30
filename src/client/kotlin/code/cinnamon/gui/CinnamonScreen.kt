@@ -5,6 +5,8 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
 import code.cinnamon.gui.components.CinnamonButton
 import code.cinnamon.gui.theme.CinnamonTheme
+import net.minecraft.util.Identifier // Ensure Identifier is imported
+import net.minecraft.client.render.RenderLayer
 import kotlin.math.max
 import kotlin.math.min
 
@@ -25,6 +27,7 @@ abstract class CinnamonScreen(title: Text) : Screen(title) {
         const val PADDING = 15
         const val CORNER_RADIUS = 8
         const val SHADOW_SIZE = 4
+        private val LOGO_TEXTURE = Identifier.of("cinnamon", "textures/gui/logo.png")
         
         // Minimum and maximum GUI sizes
         const val MIN_GUI_WIDTH = 400
@@ -108,20 +111,23 @@ abstract class CinnamonScreen(title: Text) : Screen(title) {
     }
     
     private fun renderGuiBox(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        // Main GUI background with rounded corners
-        drawRoundedRect(context, guiX, guiY, guiWidth, guiHeight, theme.guiBackground)
-        
-        // GUI border
-        drawRoundedBorder(context, guiX, guiY, guiWidth, guiHeight, theme.borderColor) // Changed from theme.guiBorder
+        // Main GUI background with rounded corners - REMOVED
+        // drawRoundedRect(context, guiX, guiY, guiWidth, guiHeight, theme.guiBackground)
         
         // Header
         renderHeader(context, mouseX, mouseY, delta)
         
+        // Fill the background of the content area (between header and footer) - Moved before renderContent
+        context.fill(guiX, guiY + HEADER_HEIGHT, guiX + guiWidth, guiY + guiHeight - FOOTER_HEIGHT, theme.coreBackgroundPrimary)
+
         // Main content area
         renderContent(context, mouseX, mouseY, delta)
         
         // Footer
         renderFooter(context, mouseX, mouseY, delta)
+
+        // GUI border (drawn last to be on top of all sections)
+        drawRoundedBorder(context, guiX, guiY, guiWidth, guiHeight, theme.borderColor) 
     }
     
     protected open fun renderHeader(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -132,14 +138,46 @@ abstract class CinnamonScreen(title: Text) : Screen(title) {
             context, guiX, headerY, guiWidth, HEADER_HEIGHT,
             theme.headerBackground, true, false
         )
+
+        // Define Logo Size and Position
+        val logoPadding = PADDING / 2 
+        val desiredLogoHeight = HEADER_HEIGHT - 2 * logoPadding 
+        val desiredLogoWidth = desiredLogoHeight 
         
-        // Title
-        val titleWidth = textRenderer.getWidth(title)
+        val logoX = guiX + PADDING
+        val logoY = guiY + (HEADER_HEIGHT - desiredLogoHeight) / 2 
+
+        // Render logo using drawTexture with RenderLayer
+        context.drawTexture(
+            RenderLayer::getGuiTextured,
+            LOGO_TEXTURE, 
+            logoX, logoY, 
+            0f, 0f, 
+            desiredLogoWidth, desiredLogoHeight, 
+            desiredLogoWidth, desiredLogoHeight
+        )
+        
+        // Title (Adjusted Position)
+        val titleText = this.title 
+        val titleTextWidth = textRenderer.getWidth(titleText)
+       
+        val spaceForLogo = PADDING + desiredLogoWidth + PADDING 
+        // Close button area calculation based on existing close button code
+        val closeButtonSize = 16 
+        val closeButtonRightMargin = 8 // From original closeButtonX calculation (guiX + guiWidth - closeButtonSize - 8)
+        val closeButtonAreaWidth = closeButtonSize + closeButtonRightMargin + PADDING // Add PADDING for margin from the title
+
+        val titleAreaX = guiX + spaceForLogo
+        // Width available for title is from the end of logo area to the start of close button area's left margin
+        val titleAreaWidth = (guiX + guiWidth - closeButtonAreaWidth) - titleAreaX
+       
+        val titleX = titleAreaX + (titleAreaWidth - titleTextWidth) / 2
+       
         context.drawText(
             textRenderer,
-            title,
-            guiX + (guiWidth - titleWidth) / 2,
-            headerY + (HEADER_HEIGHT - textRenderer.fontHeight) / 2,
+            titleText,
+            titleX, // New X
+            headerY + (HEADER_HEIGHT - textRenderer.fontHeight) / 2, // Y remains the same
             theme.titleColor,
             true
         )
@@ -152,8 +190,9 @@ abstract class CinnamonScreen(title: Text) : Screen(title) {
         )
         
         // Close button (X) in top right
-        val closeButtonSize = 16
-        val closeButtonX = guiX + guiWidth - closeButtonSize - 8
+        // val closeButtonSize = 16 // This was the redundant declaration, it should be removed.
+        // The 'closeButtonSize' used below refers to the one defined earlier for 'closeButtonAreaWidth' calculation.
+        val closeButtonX = guiX + guiWidth - closeButtonSize - 8 
         val closeButtonY = headerY + (HEADER_HEIGHT - closeButtonSize) / 2
         
         val isCloseHovered = mouseX >= closeButtonX && mouseX < closeButtonX + closeButtonSize &&

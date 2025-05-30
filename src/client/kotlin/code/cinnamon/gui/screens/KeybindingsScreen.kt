@@ -57,7 +57,7 @@ class KeybindingsScreen : CinnamonScreen(Text.literal("Keybindings")) {
             CinnamonTheme.BUTTON_HEIGHT_SMALL,
             Text.literal("Save"),
             { _, _ -> saveKeybindings() },
-            true
+            false // Changed from true to false
         ))
     }
     

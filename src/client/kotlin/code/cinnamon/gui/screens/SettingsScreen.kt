@@ -16,24 +16,30 @@ class SettingsScreen : CinnamonScreen(Text.literal("Settings")) {
         val buttonHeight = CinnamonTheme.BUTTON_HEIGHT
         val spacing = 35
         
-        // Calculate starting Y position for settings sections
+        // New calculation for button block positioning
+        val infoTextTopPadding = 20 
+        val infoTextFontHeight = 9 // Assuming textRenderer.fontHeight is 9
+        val spaceBelowInfoText = 20 
+        val topOffset = infoTextTopPadding + infoTextFontHeight + spaceBelowInfoText
+        val buttonsAvailableY = contentY + topOffset
+        val availableHeightForButtons = getContentHeight() - topOffset
         val totalButtonsHeight = (buttonHeight * 5) + (spacing * 4)
-        val startY = contentY + 80 // Leave space for title area
+        val actualButtonsStartY = buttonsAvailableY + (availableHeightForButtons - totalButtonsHeight) / 2
         
         // Settings category buttons
         addButton(CinnamonButton(
             centerX - buttonWidth / 2,
-            startY,
+            actualButtonsStartY, // Use new startY
             buttonWidth,
             buttonHeight,
             Text.literal("General"),
             { _, _ -> /* TODO: Open general settings */ },
-            true
+            false // Changed from true to false
         ))
         
         addButton(CinnamonButton(
             centerX - buttonWidth / 2,
-            startY + spacing,
+            actualButtonsStartY + spacing, // Use new startY
             buttonWidth,
             buttonHeight,
             Text.literal("Performance"),
@@ -42,7 +48,7 @@ class SettingsScreen : CinnamonScreen(Text.literal("Settings")) {
         
         addButton(CinnamonButton(
             centerX - buttonWidth / 2,
-            startY + spacing * 2,
+            actualButtonsStartY + spacing * 2, // Use new startY
             buttonWidth,
             buttonHeight,
             Text.literal("Interface"),
@@ -51,7 +57,7 @@ class SettingsScreen : CinnamonScreen(Text.literal("Settings")) {
         
         addButton(CinnamonButton(
             centerX - buttonWidth / 2,
-            startY + spacing * 3,
+            actualButtonsStartY + spacing * 3, // Use new startY
             buttonWidth,
             buttonHeight,
             Text.literal("Advanced"),
@@ -61,11 +67,11 @@ class SettingsScreen : CinnamonScreen(Text.literal("Settings")) {
         // Back button at bottom
         addButton(CinnamonButton(
             centerX - buttonWidth / 2,
-            startY + spacing * 4,
+            actualButtonsStartY + spacing * 4, // Use new startY
             buttonWidth,
             buttonHeight,
             Text.literal("Back"),
-            { _, _ -> CinnamonGuiManager.closeCurrentScreen() }
+            { _, _ -> CinnamonGuiManager.openMainMenu() } // Changed to openMainMenu
         ))
     }
     
@@ -73,39 +79,8 @@ class SettingsScreen : CinnamonScreen(Text.literal("Settings")) {
         val centerX = guiX + guiWidth / 2
         val contentY = getContentY()
         
-        // Draw title area
-        val titleText = Text.literal("SETTINGS")
-        val titleWidth = textRenderer.getWidth(titleText)
-        context.drawText(
-            textRenderer,
-            titleText,
-            centerX - titleWidth / 2,
-            contentY + 20,
-            CinnamonTheme.accentColor,
-            true
-        )
-        
-        // Draw subtitle
-        val subtitleText = Text.literal("Configure Client Preferences")
-        val subtitleWidth = textRenderer.getWidth(subtitleText)
-        context.drawText(
-            textRenderer,
-            subtitleText,
-            centerX - subtitleWidth / 2,
-            contentY + 40,
-            CinnamonTheme.secondaryTextColor,
-            false
-        )
-        
-        // Add a subtle glow effect around the title
-        val glowColor = 0x20ffffff
-        context.fill(
-            centerX - titleWidth / 2 - 2,
-            contentY + 18,
-            centerX + titleWidth / 2 + 2,
-            contentY + 32,
-            glowColor
-        )
+        // Removed "SETTINGS" title, subtitle, and glow effect.
+        // Screen title is handled by CinnamonScreen.renderHeader().
         
         // Draw settings info text
         val infoText = Text.literal("Select a category to configure")
@@ -114,7 +89,7 @@ class SettingsScreen : CinnamonScreen(Text.literal("Settings")) {
             textRenderer,
             infoText,
             centerX - infoWidth / 2,
-            contentY + 65,
+            contentY + 20, // Adjusted Y position
             CinnamonTheme.secondaryTextColor,
             false
         )

@@ -16,24 +16,27 @@ class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
         val buttonHeight = CinnamonTheme.BUTTON_HEIGHT_LARGE
         val spacing = 45
         
-        // Calculate starting Y position to center buttons vertically (now with 5 buttons)
-        val totalButtonsHeight = (buttonHeight * 5) + (spacing * 4)
-        val startY = contentY + (getContentHeight() - totalButtonsHeight) / 2
+        // New calculation for startY for the first button:
+        val logoAreaHeight = 80 // Configurable estimate for logo and subtitle area
+        val buttonsStartYAnchor = contentY + logoAreaHeight
+        val availableHeightForButtons = getContentHeight() - logoAreaHeight
+        val totalButtonsHeight = (buttonHeight * 5) + (spacing * 4) // buttonHeight is CinnamonTheme.BUTTON_HEIGHT_LARGE
+        val actualButtonsStartY = buttonsStartYAnchor + (availableHeightForButtons - totalButtonsHeight) / 2
         
         // Main navigation buttons
         addButton(CinnamonButton(
             centerX - buttonWidth / 2,
-            startY,
+            actualButtonsStartY, // Use new startY
             buttonWidth,
             buttonHeight,
             Text.literal("Modules"),
             { _, _ -> CinnamonGuiManager.openModulesScreen() },
-            true
+            false // Changed from true to false
         ))
         
         addButton(CinnamonButton(
             centerX - buttonWidth / 2,
-            startY + spacing,
+            actualButtonsStartY + spacing, // Use new startY
             buttonWidth,
             buttonHeight,
             Text.literal("Keybindings"),
@@ -42,7 +45,7 @@ class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
         
         addButton(CinnamonButton(
             centerX - buttonWidth / 2,
-            startY + spacing * 2,
+            actualButtonsStartY + spacing * 2, // Use new startY
             buttonWidth,
             buttonHeight,
             Text.literal("Settings"),
@@ -52,7 +55,7 @@ class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
         // New Theme Manager button
         addButton(CinnamonButton(
             centerX - buttonWidth / 2,
-            startY + spacing * 3,
+            actualButtonsStartY + spacing * 3, // Use new startY
             buttonWidth,
             buttonHeight,
             Text.literal("Theme Manager"),
@@ -61,7 +64,7 @@ class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
         
         addButton(CinnamonButton(
             centerX - buttonWidth / 2,
-            startY + spacing * 4,
+            actualButtonsStartY + spacing * 4, // Use new startY
             buttonWidth,
             buttonHeight,
             Text.literal("Close"),
@@ -72,8 +75,8 @@ class MainMenuScreen : CinnamonScreen(Text.literal("Cinnamon Client")) {
     override fun renderContent(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val centerX = guiX + guiWidth / 2
         val contentY = getContentY()
-    
         
+
         
         // Draw subtitle
         val subtitleText = Text.literal("Advanced Minecraft Client")

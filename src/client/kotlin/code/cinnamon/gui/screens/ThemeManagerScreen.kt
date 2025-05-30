@@ -98,7 +98,7 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
             100,
             CinnamonTheme.BUTTON_HEIGHT,
             Text.literal("Back"),
-            { _, _ -> CinnamonGuiManager.closeCurrentScreen() }
+            { _, _ -> CinnamonGuiManager.openMainMenu() } // Changed to openMainMenu
         ))
         
         // Reset to defaults button - fixed position
@@ -119,7 +119,7 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
             CinnamonTheme.BUTTON_HEIGHT,
             Text.literal("Save"),
             { _, _ -> saveTheme() },
-            true
+            false // Changed from true to false
         ))
     }
     
@@ -142,47 +142,15 @@ class ThemeManagerScreen : CinnamonScreen(Text.literal("Theme Manager")) {
         val centerX = guiX + guiWidth / 2
         val contentY = getContentY()
         
-        // Draw title area
-        val titleText = Text.literal("THEME MANAGER")
-        val titleWidth = textRenderer.getWidth(titleText)
-        context.drawText(
-            textRenderer,
-            titleText,
-            centerX - titleWidth / 2,
-            contentY + 20,
-            CinnamonTheme.accentColor,
-            true
-        )
-        
-        // Draw subtitle
-        val subtitleText = Text.literal("Customize Your Interface Colors")
-        val subtitleWidth = textRenderer.getWidth(subtitleText)
-        context.drawText(
-            textRenderer,
-            subtitleText,
-            centerX - subtitleWidth / 2,
-            contentY + 40,
-            CinnamonTheme.secondaryTextColor,
-            false
-        )
-        
-        // Add glow effect around title
-        val glowColor = 0x20ffffff
-        context.fill(
-            centerX - titleWidth / 2 - 2,
-            contentY + 18,
-            centerX + titleWidth / 2 + 2,
-            contentY + 32,
-            glowColor
-        )
+        // Removed title, subtitle, and glow effect rendering as the screen title is handled by CinnamonScreen.renderHeader
         
         // Render color list
-        renderColorList(context, mouseX, mouseY)
+        renderColorList(context, mouseX, mouseY, contentY) // Pass contentY
     }
     
-    private fun renderColorList(context: DrawContext, mouseX: Int, mouseY: Int) {
+    private fun renderColorList(context: DrawContext, mouseX: Int, mouseY: Int, contentYPos: Int) { // Added parameter
         val listX = guiX + 40
-        val listY = getContentY() + 80
+        val listY = contentYPos + 20 // Use parameter
         val listWidth = guiWidth - 80
         val listHeight = getContentHeight() - 170 // Leave space for buttons
         
