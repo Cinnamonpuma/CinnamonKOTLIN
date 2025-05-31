@@ -1,5 +1,5 @@
 // PacketMixin.kt - Mixin to modify outgoing packets
-package code.cinnamon.mixin
+package code.cinnamon.mixins
 
 import code.cinnamon.modules.ModuleManager
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
