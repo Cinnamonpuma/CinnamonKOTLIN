@@ -23,7 +23,7 @@
 		],
 		"client": [
 			{
-				"value": "code.cinnamon.CinnamonClientMod",
+				"value": "code.cinnamon.CinnamonClient",
 				"adapter": "kotlin"
 			}
 		]
