@@ -1,18 +1,63 @@
 package code.cinnamon.gui.theme
 
+// Data class to hold all core colors for a theme
+data class ThemeColors(
+    val coreBackgroundPrimary: Int,
+    val coreBackgroundSecondary: Int,
+    val coreAccentPrimary: Int,
+    val coreAccentSecondary: Int,
+    val coreTextPrimary: Int,
+    val coreTextSecondary: Int,
+    val coreBorder: Int,
+    // Status colors could also be part of the theme, but for now, keeping them as defined in CinnamonTheme
+    // Or, if they should also change, add them to ThemeColors and update applyTheme accordingly
+)
+
+// Enum to define available themes
+enum class Theme(val colors: ThemeColors) {
+    DARK(
+        ThemeColors(
+            coreBackgroundPrimary = 0xE61a1a1a.toInt(),
+            coreBackgroundSecondary = 0xE61f1f1f.toInt(),
+            coreAccentPrimary = 0xFF00aaff.toInt(),
+            coreAccentSecondary = 0xE6404040.toInt(),
+            coreTextPrimary = 0xFFe0e0e0.toInt(),
+            coreTextSecondary = 0xFFa0a0a0.toInt(),
+            coreBorder = 0xFF404040.toInt()
+        )
+    ),
+    LIGHT(
+        ThemeColors(
+            coreBackgroundPrimary = 0xE6FAFAFA.toInt(),
+            coreBackgroundSecondary = 0xE6F0F0F0.toInt(),
+            coreAccentPrimary = 0xFF007ACC.toInt(),
+            coreAccentSecondary = 0xE6DDDDDD.toInt(),
+            coreTextPrimary = 0xFF202020.toInt(),
+            coreTextSecondary = 0xFF505050.toInt(),
+            coreBorder = 0xFFCCCCCC.toInt()
+        )
+    )
+}
+
 object CinnamonTheme {
 
-    // 1. Core Color Properties (Mutable)
-    var coreBackgroundPrimary = 0xE61a1a1a.toInt()     // Primary Background (e.g., old guiBackground)
-    var coreBackgroundSecondary = 0xE61f1f1f.toInt()   // Secondary Background (e.g., old contentBackground)
-    var coreAccentPrimary = 0xFF00aaff.toInt()         // Primary Accent (e.g., old accentColor)
-    var coreAccentSecondary = 0xE6404040.toInt()       // Secondary Accent/Button (e.g., old buttonBackground)
-    var coreTextPrimary = 0xFFe0e0e0.toInt()           // Primary Text (e.g., old primaryTextColor)
-    var coreTextSecondary = 0xFFa0a0a0.toInt()         // Secondary Text (e.g., old secondaryTextColor)
-    var coreBorder = 0xFF404040.toInt()               // Border Color (e.g., old guiBorder)
+    // 1. Core Color Properties (Mutable) - These will be updated by applyTheme
+    var coreBackgroundPrimary = 0 // Placeholder, will be set by init -> applyTheme
+    var coreBackgroundSecondary = 0 // Placeholder
+    var coreAccentPrimary = 0 // Placeholder
+    var coreAccentSecondary = 0 // Placeholder
+    var coreTextPrimary = 0 // Placeholder
+    var coreTextSecondary = 0 // Placeholder
+    var coreBorder = 0 // Placeholder
+
+    // Status colors remain directly mutable for now, not part of ThemeColors data class.
+    // They could be added to ThemeColors if theme-specific status colors are desired.
     var coreStatusSuccess = 0xFF4caf50.toInt()         // Success Color
     var coreStatusWarning = 0xFFff9800.toInt()         // Warning Color
     var coreStatusError = 0xFFf44336.toInt()           // Error Color
+
+    // Currently active theme
+    var currentTheme: Theme = Theme.DARK // Default to Dark theme
 
     // 2. Independent Special Effect Colors (Mutable)
     var patternColor = 0x10ffffff.toInt()
@@ -83,51 +128,57 @@ object CinnamonTheme {
     val moduleBackgroundDisabled: Int get() = adjustBrightness(coreAccentSecondary, -0.2f)
 
 
-    // Store default values for reset functionality
-    private val defaultColors = mutableMapOf<String, Int>()
-    
-    init {
-        saveDefaults()
-        updateDependentColors() // Ensure derived colors are calculated on initialization
-    }
-    
-    private fun saveDefaults() {
-        defaultColors.clear() // Clear any old defaults if this were ever called multiple times
-        defaultColors["coreBackgroundPrimary"] = coreBackgroundPrimary
-        defaultColors["coreBackgroundSecondary"] = coreBackgroundSecondary
-        defaultColors["coreAccentPrimary"] = coreAccentPrimary
-        defaultColors["coreAccentSecondary"] = coreAccentSecondary
-        defaultColors["coreTextPrimary"] = coreTextPrimary
-        defaultColors["coreTextSecondary"] = coreTextSecondary
-        defaultColors["coreBorder"] = coreBorder
-        defaultColors["coreStatusSuccess"] = coreStatusSuccess
-        defaultColors["coreStatusWarning"] = coreStatusWarning
-        defaultColors["coreStatusError"] = coreStatusError
+    // Store default values for reset functionality - This might need rethinking with themes.
+    // For now, resetToDefaults will explicitly apply Theme.DARK.
+    // private val defaultColors = mutableMapOf<String, Int>() // Keeping for now, but its role is diminished.
 
-        defaultColors["patternColor"] = patternColor
-        defaultColors["overlayColor"] = overlayColor
-        defaultColors["glassHighlight"] = glassHighlight
-        defaultColors["glassShadow"] = glassShadow
+    init {
+        // saveDefaults() // saveDefaults will be called by applyTheme if we want to save the applied theme's colors
+        applyTheme(Theme.DARK) // Initialize with Dark Theme; this also calls updateDependentColors
+    }
+
+    // Removed saveDefaults() as its previous role is handled by applyTheme setting specific theme colors.
+    // If we need to save *customizations* on top of a theme, this function might be re-introduced.
+
+    fun applyTheme(theme: Theme) {
+        currentTheme = theme
+
+        coreBackgroundPrimary = theme.colors.coreBackgroundPrimary
+        coreBackgroundSecondary = theme.colors.coreBackgroundSecondary
+        coreAccentPrimary = theme.colors.coreAccentPrimary
+        coreAccentSecondary = theme.colors.coreAccentSecondary
+        coreTextPrimary = theme.colors.coreTextPrimary
+        coreTextSecondary = theme.colors.coreTextSecondary
+        coreBorder = theme.colors.coreBorder
+
+        // Note: Status colors (success, warning, error) and special effect colors (patternColor, etc.)
+        // are not part of the ThemeColors data class in this iteration.
+        // They retain their values unless explicitly changed.
+        // If they need to be themed, add them to ThemeColors and update here.
+
+        updateDependentColors()
+        // If we want 'resetToDefaults' to reset to the *last applied theme's* defaults,
+        // then saveDefaults() should be called here.
+        // For now, resetToDefaults explicitly applies Dark theme.
     }
     
     fun resetToDefaults() {
-        coreBackgroundPrimary = defaultColors["coreBackgroundPrimary"] ?: 0xE61a1a1a.toInt()
-        coreBackgroundSecondary = defaultColors["coreBackgroundSecondary"] ?: 0xE61f1f1f.toInt()
-        coreAccentPrimary = defaultColors["coreAccentPrimary"] ?: 0xFF00aaff.toInt()
-        coreAccentSecondary = defaultColors["coreAccentSecondary"] ?: 0xE6404040.toInt()
-        coreTextPrimary = defaultColors["coreTextPrimary"] ?: 0xFFe0e0e0.toInt()
-        coreTextSecondary = defaultColors["coreTextSecondary"] ?: 0xFFa0a0a0.toInt()
-        coreBorder = defaultColors["coreBorder"] ?: 0xFF404040.toInt()
-        coreStatusSuccess = defaultColors["coreStatusSuccess"] ?: 0xFF4caf50.toInt()
-        coreStatusWarning = defaultColors["coreStatusWarning"] ?: 0xFFff9800.toInt()
-        coreStatusError = defaultColors["coreStatusError"] ?: 0xFFf44336.toInt()
+        // Reset to Dark Theme specifically, as per requirement.
+        applyTheme(Theme.DARK)
 
-        patternColor = defaultColors["patternColor"] ?: 0x10ffffff.toInt()
-        overlayColor = defaultColors["overlayColor"] ?: 0x80000000.toInt()
-        glassHighlight = defaultColors["glassHighlight"] ?: 0x20ffffff.toInt()
-        glassShadow = defaultColors["glassShadow"] ?: 0x40000000.toInt()
+        // Reset independent special effect colors and status colors to their initial defaults
+        // as they are not part of the theme application logic in applyTheme.
+        // If these were part of ThemeColors, applyTheme(Theme.DARK) would handle them.
+        coreStatusSuccess = 0xFF4caf50.toInt()
+        coreStatusWarning = 0xFFff9800.toInt()
+        coreStatusError = 0xFFf44336.toInt()
+
+        patternColor = 0x10ffffff.toInt()
+        overlayColor = 0x80000000.toInt()
+        glassHighlight = 0x20ffffff.toInt()
+        glassShadow = 0x40000000.toInt()
         
-        updateDependentColors() // Recalculate all derived colors
+        // updateDependentColors() is already called by applyTheme(Theme.DARK)
     }
     
     fun updateDependentColors() {

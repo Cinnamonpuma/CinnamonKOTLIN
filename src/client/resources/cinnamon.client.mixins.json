@@ -1,9 +1,11 @@
 {
 	"required": true,
-	"package": "code.cinnamon.mixin.client",
+	"package": "code.cinnamon.mixins",
 	"compatibilityLevel": "JAVA_21",
-	"client": [
-		"ExampleClientMixin"
+	"mixins": [
+		"PacketMixin",
+		"NoFallMixin"
+
 	],
 	"injectors": {
 		"defaultRequire": 1

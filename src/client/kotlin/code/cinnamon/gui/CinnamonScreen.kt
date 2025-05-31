@@ -161,17 +161,8 @@ abstract class CinnamonScreen(title: Text) : Screen(title) {
         val titleText = this.title 
         val titleTextWidth = textRenderer.getWidth(titleText)
        
-        val spaceForLogo = PADDING + desiredLogoWidth + PADDING 
-        // Close button area calculation based on existing close button code
-        val closeButtonSize = 16 
-        val closeButtonRightMargin = 8 // From original closeButtonX calculation (guiX + guiWidth - closeButtonSize - 8)
-        val closeButtonAreaWidth = closeButtonSize + closeButtonRightMargin + PADDING // Add PADDING for margin from the title
-
-        val titleAreaX = guiX + spaceForLogo
-        // Width available for title is from the end of logo area to the start of close button area's left margin
-        val titleAreaWidth = (guiX + guiWidth - closeButtonAreaWidth) - titleAreaX
-       
-        val titleX = titleAreaX + (titleAreaWidth - titleTextWidth) / 2
+        // Center the title in the entire header width
+        val titleX = guiX + (guiWidth - titleTextWidth) / 2
        
         context.drawText(
             textRenderer,
@@ -190,8 +181,7 @@ abstract class CinnamonScreen(title: Text) : Screen(title) {
         )
         
         // Close button (X) in top right
-        // val closeButtonSize = 16 // This was the redundant declaration, it should be removed.
-        // The 'closeButtonSize' used below refers to the one defined earlier for 'closeButtonAreaWidth' calculation.
+        val closeButtonSize = 16 // Standard size for the close button visual
         val closeButtonX = guiX + guiWidth - closeButtonSize - 8 
         val closeButtonY = headerY + (HEADER_HEIGHT - closeButtonSize) / 2
         

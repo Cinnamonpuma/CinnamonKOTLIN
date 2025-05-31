@@ -33,9 +33,8 @@ object ModuleManager {
     
     fun initialize() {
         // Register your modules here
-        registerModule(SpeedModule())
-        registerModule(FlightModule())
         registerModule(NoFallModule())
+        registerModule(AutoclickerModule()) // Added
         // Add more modules as needed
     }
 }
