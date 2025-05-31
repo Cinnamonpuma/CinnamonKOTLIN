@@ -1,29 +1,30 @@
-// NoFallMixin.kt - Simple mixin to prevent fall damage
+// NoFallMixin.kt - Simple mixin to prevent fall damage for MC 1.21.5
 package code.cinnamon.mixins
 
 import code.cinnamon.modules.ModuleManager
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.entity.damage.DamageSource
 import org.spongepowered.asm.mixin.Mixin
 import org.spongepowered.asm.mixin.injection.At
 import org.spongepowered.asm.mixin.injection.Inject
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
 
 @Mixin(PlayerEntity::class)
 class NoFallMixin {
 
     /**
-     * Simple approach: Reset fall distance every tick
-     * This prevents any fall damage from accumulating
+     * Most reliable approach for 1.21.5: Directly prevent fall damage
      */
-    @Inject(method = ["tick"], at = [At("TAIL")])
-    private fun onTick(ci: CallbackInfo) {
+    @Inject(method = ["damage"], at = [At("HEAD")], cancellable = true)
+    private fun onDamage(source: DamageSource, amount: Float, cir: CallbackInfoReturnable<Boolean>) {
         val noFallModule = ModuleManager.getModule("NoFall")
         
         if (noFallModule != null && noFallModule.isEnabled) {
-            val player = this as PlayerEntity
-            // Reset fall distance to 0 if it's greater than 0
-            if (player.fallDistance > 0.0) {
-                player.fallDistance = 0.0
+            // Check if this is fall damage and cancel it
+            if (source.isOf(net.minecraft.entity.damage.DamageTypes.FALL)) {
+                cir.setReturnValue(false)
+                return
             }
         }
     }
